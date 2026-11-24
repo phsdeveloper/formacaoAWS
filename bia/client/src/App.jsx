@@ -9,10 +9,12 @@ import AddTask from "./components/AddTask.jsx";
 import Modal from "./components/Modal.jsx";
 import About from "./components/About.jsx";
 import DebugLogs from "./components/DebugLogs.jsx";
-
-const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+import { resolveApiUrl } from "./apiUrl.js";
 
 function AppContent() {
+  const [apiUrl, setApiUrl] = useState(null);
+  const [apiError, setApiError] = useState(null);
+  const [apiAttempt, setApiAttempt] = useState(0);
   const [tasks, setTasks] = useState([]);
   const [fromCache, setFromCache] = useState(false);
   const [cacheTTL, setCacheTTL] = useState(null);
@@ -21,9 +23,26 @@ function AppContent() {
   const { logApiRequest, logApiResponse, logApiError, addLog } = useLog();
 
   useEffect(() => {
+    let active = true;
+    setApiError(null);
+    resolveApiUrl(import.meta.env.VITE_API_URL, window.location, (message) => {
+      if (active) addLog('WARNING', 'Verificação da API', message);
+    }).then((url) => {
+      if (active) setApiUrl(url);
+    }).catch((error) => {
+      if (active) {
+        addLog('ERROR', 'Falha ao conectar à API', error.message);
+        setApiError(error.message);
+      }
+    });
+    return () => { active = false; };
+  }, [apiAttempt]);
+
+  useEffect(() => {
+    if (!apiUrl) return;
     addLog('INFO', 'Aplicação iniciada', `API URL configurada: ${apiUrl}`);
     getTasks();
-  }, []);
+  }, [apiUrl]);
 
   const getTasks = async () => {
     try {
@@ -236,11 +255,27 @@ function AppContent() {
     </>
   );
 
+  if (!apiUrl) {
+    return (
+      <div className="container">
+        {apiError ? (
+          <div role="alert">
+            <p>{apiError}</p>
+            <button onClick={() => setApiAttempt((attempt) => attempt + 1)}>
+              Tentar novamente
+            </button>
+          </div>
+        ) : <p>Verificando conexão com a API...</p>}
+        <DebugLogs apiUrl="Não conectada" />
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <Router>
         <div className="container">
-          <Header />
+          <Header apiUrl={apiUrl} />
 
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -248,7 +283,7 @@ function AppContent() {
           </Routes>
           <Footer />
         </div>
-        <DebugLogs />
+        <DebugLogs apiUrl={apiUrl} />
       </Router>
     </div>
   );

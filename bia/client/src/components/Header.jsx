@@ -3,14 +3,14 @@ import { FaSun, FaMoon } from "react-icons/fa";
 import { useTheme } from "../contexts/ThemeContext.jsx";
 import VersionInfo from "./VersionInfo";
 
-const Header = ({ title }) => {
+const Header = ({ title, apiUrl }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   
   return (
     <header className="header">
       <h1>{title}</h1>
       <div className="header-controls">
-        <VersionInfo />
+        <VersionInfo apiUrl={apiUrl} />
         <button 
           className="theme-toggle" 
           onClick={toggleTheme}

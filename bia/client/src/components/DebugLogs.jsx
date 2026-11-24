@@ -2,7 +2,7 @@ import React from 'react';
 import { FaBug, FaTimes, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useLog } from '../contexts/LogContext.jsx';
 
-const DebugLogs = () => {
+const DebugLogs = ({ apiUrl }) => {
   const { logs, isLogVisible, debugMode, clearLogs, toggleLogVisibility } = useLog();
 
   if (!debugMode) return null;
@@ -54,7 +54,7 @@ const DebugLogs = () => {
           <div className="debug-info">
             <h4>🔧 Área de Debug</h4>
             <p>Esta área mostra logs da API para facilitar o debug durante o desenvolvimento.</p>
-            <p><strong>URL da API:</strong> {import.meta.env.VITE_API_URL || "http://localhost:8080"}</p>
+            <p><strong>URL da API:</strong> {apiUrl}</p>
           </div>
           
           <div className="logs-container">

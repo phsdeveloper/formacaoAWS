@@ -1,30 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
-const VersionInfo = () => {
+const VersionInfo = ({ apiUrl }) => {
   const [showVersion, setShowVersion] = useState(false);
   const [apiStatus, setApiStatus] = useState('checking'); // 'checking', 'online', 'offline'
   const [apiVersion, setApiVersion] = useState('4.0.0');
   const [cacheConfig, setCacheConfig] = useState(null);
 
-  const getApiUrl = () => {
-    // Se estiver definido no ambiente (Docker/Produção)
-    if (import.meta.env.VITE_API_URL) {
-      return import.meta.env.VITE_API_URL;
-    }
-    
-    // Se estiver rodando no mesmo domínio (produção integrada)
-    if (window.location.port === '8080') {
-      return window.location.origin;
-    }
-    
-    // Desenvolvimento local - inferir porta 8080
-    return 'http://localhost:8080';
-  };
-
   const checkApiHealth = async () => {
     setApiStatus('checking');
     try {
-      const apiUrl = getApiUrl();
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
       
@@ -71,7 +55,6 @@ const VersionInfo = () => {
   };
 
   const openVersionEndpoint = () => {
-    const apiUrl = getApiUrl();
     window.open(`${apiUrl}/api/versao`, '_blank');
   };
 
@@ -183,7 +166,7 @@ const VersionInfo = () => {
                  Ambiente: {getEnvironmentInfo().label}
                </small>
                <small>Local: {getEnvironmentInfo().description}</small>
-               <small>API: {getApiUrl()}</small>
+               <small>API: {apiUrl}</small>
                {cacheConfig && cacheConfig.enabled && (
                  <small>Cache: {cacheConfig.endpoint}:{cacheConfig.port} - {cacheConfig.ttl}s</small>
                )}
